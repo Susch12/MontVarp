@@ -1,0 +1,114 @@
+# Docker Compose para Sistema VarP Monte Carlo
+# Usa imágenes pre-construidas
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: varp-rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: -rabbit heartbeat 60
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_logs:/var/log/rabbitmq
+    networks:
+      - varp-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+
+  producer:
+    image: varp-producer
+    container_name: varp-producer
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASS: password
+      RABBITMQ_VHOST: /
+      PRODUCER_STATS_INTERVAL: 5
+      DEFAULT_NUM_ESCENARIOS: 1000
+      DEFAULT_RANDOM_SEED: 42
+      MODELO_FILE: modelos/ejemplo_simple.ini
+      LOG_LEVEL: INFO
+      LOG_FORMAT: colored
+    volumes:
+      - ./modelos:/app/modelos:ro
+    networks:
+      - varp-network
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+    command: sh -c "sleep 10 && python -m src.producer.producer"
+
+  consumer:
+    image: varp-consumer
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASS: password
+      RABBITMQ_VHOST: /
+      CONSUMER_STATS_INTERVAL: 5
+      CONSUMER_PREFETCH_COUNT: 1
+      CONSUMER_TIMEOUT: 30
+      CONSUMER_MAX_RETRIES: 3
+      CONSUMER_RETRY_DELAY: 5
+      LOG_LEVEL: INFO
+      LOG_FORMAT: colored
+    networks:
+      - varp-network
+    depends_on:
+      - rabbitmq
+      - producer
+    restart: unless-stopped
+    command: sh -c "sleep 15 && python -m src.consumer.consumer"
+
+  dashboard:
+    image: varp-dashboard
+    container_name: varp-dashboard
+    ports:
+      - "8050:8050"
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASS: password
+      RABBITMQ_VHOST: /
+      DASHBOARD_HOST: 0.0.0.0
+      DASHBOARD_PORT: 8050
+      DASHBOARD_REFRESH_INTERVAL: 2000
+      LOG_LEVEL: INFO
+      LOG_FORMAT: colored
+    networks:
+      - varp-network
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8050/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    command: sh -c "sleep 10 && python -m src.dashboard"
+
+networks:
+  varp-network:
+    driver: bridge
+
+volumes:
+  rabbitmq_data:
+    driver: local
+  rabbitmq_logs:
+    driver: local
