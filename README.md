@@ -1,7 +1,3 @@
-¡Claro\! Con gusto agregaré las secciones de **Ejecución y Despliegue** y **Flujo de Ejecución** al `README.md` para proporcionar una guía completa sobre cómo arrancar el sistema.
-
-Aquí está el `README.md` actualizado y completo:
-
 # Sistema Distribuido de Simulación Monte Carlo con Paso de Mensajes
 
 ##  Tabla de Contenidos
