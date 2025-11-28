@@ -4,7 +4,7 @@ Aquí está el `README.md` actualizado y completo:
 
 # Sistema Distribuido de Simulación Monte Carlo con Paso de Mensajes
 
-## 📋 Tabla de Contenidos
+##  Tabla de Contenidos
 
 1.  [Descripción General](https://www.google.com/search?q=%23descripci%C3%B3n-general)
 2.  [Requisitos del Sistema](https://www.google.com/search?q=%23requisitos-del-sistema)
@@ -139,7 +139,7 @@ Los siguientes modelos de ejemplo se encuentran en la carpeta `modelos/` y demue
 
 El sistema está completamente dockerizado y la forma más simple de ejecutar todos los servicios es mediante `docker-compose` y los *scripts* de automatización.
 
-### 🚀 Quick Start (Usando `start.sh`)
+###  Quick Start (Usando `start.sh`)
 
 1.  **Configuración Inicial**:
     ```bash
@@ -171,7 +171,7 @@ El sistema está completamente dockerizado y la forma más simple de ejecutar to
     ./stop.sh --clean
     ```
 
-### ⚙️ Escalabilidad
+###  Escalabilidad
 
 El servicio **Consumer** está diseñado para ser escalable horizontalmente, lo cual se maneja directamente con `docker-compose` a través del *script* `start.sh`:
 
